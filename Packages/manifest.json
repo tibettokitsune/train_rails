@@ -1,7 +1,10 @@
 {
   "dependencies": {
+    "com.unity.2d.sprite": "1.0.0",
+    "com.unity.cinemachine": "2.9.7",
     "com.unity.collab-proxy": "2.4.3",
     "com.unity.feature.development": "1.0.1",
+    "com.unity.splines": "2.5.2",
     "com.unity.textmeshpro": "3.0.6",
     "com.unity.timeline": "1.7.6",
     "com.unity.ugui": "1.0.0",
@@ -36,6 +39,8 @@
     "com.unity.modules.video": "1.0.0",
     "com.unity.modules.vr": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
-    "com.unity.modules.xr": "1.0.0"
+    "com.unity.modules.xr": "1.0.0",
+    "com.goodcat.fsm": "https://github.com/GoodCatGames/FSM.git",
+    "com.goodcat.conditions": "https://github.com/GoodCatGames/Conditions.git"
   }
 }
