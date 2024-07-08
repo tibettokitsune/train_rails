@@ -1,79 +1,85 @@
 using System.Collections.Generic;
+using System.Linq;
+using CodeMonkey.Utils;
 using Dreamteck.Splines;
 using GoodCat.Fsm;
 using UnityEngine;
+using Vector3 = UnityEngine.Vector3;
 
 namespace Game.Scripts.RailsBuildingSystem
 {
     public class PressingState : State
     {
-        private Vector2 startPosition;
-        private Vector2 endPosition;
+        private Vector3 startPosition;
+        private Vector3 endPosition;
         private readonly BuilderConfiguration _configuration;
         private SplineComputer computer;
-        private readonly List<GameObject> _tempItems;
+        private SplinePoint[] wayPoints;
+        private Pathfinding pathfinding;
+
+
         public PressingState(BuilderConfiguration configuration)
         {
             _configuration = configuration;
-            _tempItems = new List<GameObject>();
+            pathfinding = new Pathfinding(20, 20);
         }
+
         protected override void OnEnable()
         {
-            CreateStartPositionCell();
-            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            go.transform.position = GetPlaneIntersection();
-            _tempItems.Add(go);
+            startPosition = GetPlaneIntersection();
         }
 
         protected override bool OnUpdate()
         {
-            // TryBuildRailroad();
-            
+            endPosition = GetPlaneIntersection();
+
+            if (!startPosition.Equals(endPosition) && computer == null)
+            {
+                computer = Object.Instantiate(_configuration.splineComputer);
+            }
+            TryBuildRailroad();
             return false;
         }
 
         private void TryBuildRailroad()
         {
-            // computer.SetPoints(new SplinePoint[]
-            // {
-            //     new SplinePoint(startPosition), new SplinePoint(endPosition)
-            // });
+            List<PathNode> path = pathfinding.FindPath((int) startPosition.x + 10, (int) startPosition.z + 10,
+                (int) endPosition.x + 10, (int) endPosition.z + 10);
+            wayPoints = path.Select(x =>
+            {
+                var p = new SplinePoint(new Vector3(x.x - 10, 0, x.y - 10));
+                p.size = 0.3f;
+                return p;
+            }).ToArray();
+            computer.SetPoints(wayPoints);
         }
+
 
         protected override void OnDisable()
         {
-            // GameObject.Destroy(computer);
-            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            go.transform.position = GetPlaneIntersection();
-            _tempItems.Add(go);
+            // Object.Destroy(computer.gameObject);
         }
         
-        private void CreateStartPositionCell()
-        {
-            computer = GameObject.Instantiate(_configuration.splineComputer);
-        }
-        
+
         Vector3 GetPlaneIntersection()
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             float delta = ray.origin.y;
             Vector3 dirNorm = ray.direction / ray.direction.y;
             Vector3 IntersectionPos = ray.origin - dirNorm * delta;
+            IntersectionPos.x = Mathf.RoundToInt(IntersectionPos.x);
+            IntersectionPos.z = Mathf.RoundToInt(IntersectionPos.z);
+
             return IntersectionPos;
         }
 
         public void Discard()
         {
-            while (_tempItems.Count > 0)
-            {
-                GameObject.Destroy(_tempItems[^1]);
-                _tempItems.RemoveAt(_tempItems.Count - 1);
-            }
+            Object.Destroy(computer.gameObject);
         }
 
         public void Apply()
         {
-            
         }
     }
 }
